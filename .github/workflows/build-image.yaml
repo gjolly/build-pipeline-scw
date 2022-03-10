@@ -1,5 +1,13 @@
-name: Focal image build
-on: []
+name: Ubuntu image build
+on:
+  workflow_dispatch:
+    inputs:
+      series:
+        description: Ubuntu series to build
+        required: true
+        default: focal
+        type: string
+
 jobs:
   debootstrap:
     runs-on: ubuntu-latest
@@ -7,11 +15,11 @@ jobs:
       - name: creating rootfs directory
         run: mkdir ./rootfs
       - name: running debootstrap
-        run: debootstrap focal ./rootfs http://archive.ubuntu.com
+        run: debootstrap ${{ inputs.series }} ./rootfs http://archive.ubuntu.com
       - name: creating tarball
         run: tar czvf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
         uses: actions/upload-artifact@v3
         with:
-          name: focal-rootfs
+          name: ${{ inputs.series }}-rootfs
           path: rootfs.tar.gz
