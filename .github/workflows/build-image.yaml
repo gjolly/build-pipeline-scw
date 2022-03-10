@@ -7,6 +7,11 @@ on:
         required: true
         default: focal
         type: string
+      bootstrap_mirror:
+        description: Mirror to use to bootstrap the system
+        required: true
+        default: http://archive.ubuntu.com/ubuntu
+        type: string
 
 jobs:
   debootstrap:
@@ -17,7 +22,7 @@ jobs:
       - name: creating rootfs directory
         run: mkdir ./rootfs
       - name: running debootstrap
-        run: sudo debootstrap ${{ github.event.inputs.series }} ./rootfs http://archive.ubuntu.com
+        run: sudo debootstrap ${{ github.event.inputs.series }} ./rootfs ${{ github.event.inputs.bootstrap_mirror }}
       - name: creating tarball
         run: sudo tar czvf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
