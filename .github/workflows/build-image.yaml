@@ -17,11 +17,11 @@ jobs:
       - name: creating rootfs directory
         run: mkdir ./rootfs
       - name: running debootstrap
-        run: sudo debootstrap ${{ inputs.series }} ./rootfs http://archive.ubuntu.com
+        run: sudo debootstrap ${{ github.event.inputs.series }} ./rootfs http://archive.ubuntu.com
       - name: creating tarball
         run: sudo tar czvf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.series }}-rootfs
+          name: ${{ github.event.inputs.series }}-rootfs
           path: rootfs.tar.gz
