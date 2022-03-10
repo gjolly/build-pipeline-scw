@@ -1,0 +1,17 @@
+name: Focal image build
+on: []
+jobs:
+  debootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: creating rootfs directory
+        run: mkdir ./rootfs
+      - name: running debootstrap
+        run: debootstrap focal ./rootfs http://archive.ubuntu.com
+      - name: creating tarball
+        run: tar czvf rootfs.tar.gz ./rootfs
+      - name: Saving rootfs tarball
+        uses: actions/upload-artifact@v3
+        with:
+          name: focal-rootfs
+          path: rootfs.tar.gz
