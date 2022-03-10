@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: installing debootstrap
-        run: apt-get install -qqy debootstrap
+        run: sudo apt-get install -qqy debootstrap
       - name: creating rootfs directory
         run: mkdir ./rootfs
       - name: running debootstrap
-        run: debootstrap ${{ inputs.series }} ./rootfs http://archive.ubuntu.com
+        run: sudo debootstrap ${{ inputs.series }} ./rootfs http://archive.ubuntu.com
       - name: creating tarball
-        run: tar czvf rootfs.tar.gz ./rootfs
+        run: sudo tar czvf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
         uses: actions/upload-artifact@v3
         with:
