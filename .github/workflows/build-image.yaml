@@ -12,6 +12,8 @@ jobs:
   debootstrap:
     runs-on: ubuntu-latest
     steps:
+      - name: installing debootstrap
+        run: apt-get install -qqy debootstrap
       - name: creating rootfs directory
         run: mkdir ./rootfs
       - name: running debootstrap
