@@ -64,7 +64,7 @@ jobs:
             --disk-image disk.img \
             --series focal \
             --extra-package cloud-init \
-            --extra-package openssh \
+            --extra-package openssh-server \
             --extra-package apt-transport-https \
             --extra-package ca-certificates \
             --extra-package linux-kvm
