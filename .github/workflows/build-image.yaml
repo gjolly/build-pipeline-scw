@@ -63,11 +63,18 @@ jobs:
           sudo genesis update-system \
             --disk-image disk.img \
             --series focal \
-            --extra-package cloud-init \
-            --extra-package openssh-server \
             --extra-package apt-transport-https \
             --extra-package ca-certificates \
-            --extra-package linux-kvm
+            --extra-package cloud-guest-utils \
+            --extra-package cloud-init \
+            --extra-package curl \
+            --extra-package git \
+            --extra-package htop \
+            --extra-package linux-kvm \
+            --extra-package openssh-server \
+            --extra-package tmux \
+            --extra-package vim \
+            --extra-package wget
       - name: Install Grub
         run: |
           sudo genesis install-grub --disk-image disk.img
