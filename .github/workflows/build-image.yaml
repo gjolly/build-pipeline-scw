@@ -17,6 +17,9 @@ jobs:
   debootstrap:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
       - name: update APT cache
         run: sudo apt-get update
       - name: installing dependencies
@@ -40,6 +43,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: ['debootstrap']
     steps:
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
       - name: update APT cache
         run: sudo apt-get update
       - name: installing dependencies
