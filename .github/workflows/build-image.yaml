@@ -54,9 +54,7 @@ jobs:
       - uses: actions/download-artifact@master
         with:
           name: ${{ github.event.inputs.series }}-rootfs
-          path: rootfs.tar.gz
-      - name: untar rootfs
-        run: tar xvf rootfs.tar.gz
+          path: rootfs
       - name: creating disk-image
         run: sudo genesis create-disk --rootfs-dir ./rootfs
       - name: Updating the system
