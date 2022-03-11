@@ -33,7 +33,7 @@ jobs:
       - name: Saving rootfs tarball
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ github.event.inputs.series }}-rootfs
+          name: ${{ github.event.inputs.series }}-rootfs.tar.gz
           path: rootfs.tar.gz
 
   image-build:
@@ -53,8 +53,9 @@ jobs:
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - uses: actions/download-artifact@master
         with:
-          name: ${{ github.event.inputs.series }}-rootfs
-          path: rootfs
+          name: ${{ github.event.inputs.series }}-rootfs.tar.gz
+      - name: extract rootfs
+        run: tar xvf ${{ github.event.inputs.series }}-rootfs.tar.gz
       - name: creating disk-image
         run: sudo genesis create-disk --rootfs-dir ./rootfs
       - name: Updating the system
