@@ -17,12 +17,17 @@ jobs:
   debootstrap:
     runs-on: ubuntu-latest
     steps:
-      - name: installing debootstrap
-        run: sudo apt-get install -qqy debootstrap
-      - name: creating rootfs directory
-        run: mkdir ./rootfs
+      - name: update APT cache
+        run: sudo apt-get update
+      - name: installing dependencies
+        run: |
+          sudo apt-get install -y \
+                debootstrap \
+                python3-pip
+      - name: installing genesis
+        run: sudo pip install git+https://github.com/gjolly/genesis.git@cli
       - name: running debootstrap
-        run: sudo debootstrap ${{ github.event.inputs.series }} ./rootfs ${{ github.event.inputs.bootstrap_mirror }}
+        run: sudo genesis debootstrap --output ./rootfs --series ${{ github.event.inputs.series }}
       - name: creating tarball
         run: sudo tar czvf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
@@ -30,3 +35,48 @@ jobs:
         with:
           name: ${{ github.event.inputs.series }}-rootfs
           path: rootfs.tar.gz
+
+  image-build:
+    runs-on: ubuntu-latest
+    needs: ['debootstrap']
+    steps:
+      - name: update APT cache
+        run: sudo apt-get update
+      - name: installing dependencies
+        run: |
+          sudo apt-get install -y \
+                qemu-utils \
+                qemu-system-x86 \
+                python3-pip \
+                kpartx
+      - name: installing genesis
+        run: sudo pip install git+https://github.com/gjolly/genesis.git@cli
+      - uses: actions/download-artifact@master
+        with:
+          name: ${{ github.event.inputs.series }}-rootfs
+          path: rootfs.tar.gz
+      - name: untar rootfs
+        run: tar xvf rootfs.tar.gz
+      - name: creating disk-image
+        run: sudo genesis create-disk --rootfs-dir ./rootfs
+      - name: Updating the system
+        run: |
+          sudo genesis update-system \
+            --disk-image disk.img \
+            --series focal \
+            --extra-package cloud-init \
+            --extra-package openssh \
+            --extra-package apt-transport-https \
+            --extra-package ca-certificates \
+            --extra-package linux-kvm
+      - name: Install Grub
+        run: |
+          sudo genesis install-grub --disk-image disk.img
+      - name: Converting to qcow2
+        run: |
+          sudo qemu-img convert -f raw -O qcow2 disk.img disk-image.img
+      - name: Saving disk-image
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.inputs.series }}.img
+          path: disk-image.img
