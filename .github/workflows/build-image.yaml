@@ -21,9 +21,9 @@ jobs:
         with:
           python-version: '3.9'
       - name: python version
-        run: python -V
+        run: which python
       - name: root python version
-        run: sudo python -V
+        run: sudo which python
       - name: update APT cache
         run: sudo apt-get update
       - name: installing dependencies
