@@ -25,8 +25,7 @@ jobs:
       - name: installing dependencies
         run: |
           sudo apt-get install -y \
-                debootstrap \
-                python3-pip
+                debootstrap
       - name: installing genesis
         run: sudo pip install git+https://github.com/gjolly/genesis.git@cli
       - name: running debootstrap
@@ -53,7 +52,6 @@ jobs:
           sudo apt-get install -y \
                 qemu-utils \
                 qemu-system-x86 \
-                python3-pip \
                 kpartx
       - name: installing genesis
         run: sudo pip install git+https://github.com/gjolly/genesis.git@cli
