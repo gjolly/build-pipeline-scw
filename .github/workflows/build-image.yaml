@@ -27,9 +27,9 @@ jobs:
           sudo apt-get install -y \
                 debootstrap
       - name: installing genesis
-        run: sudo /opt/hostedtoolcache/Python/3.9.10/x64/bin/python -m pip install git+https://github.com/gjolly/genesis.git@cli
+        run: pip install git+https://github.com/gjolly/genesis.git@cli
       - name: running debootstrap
-        run: sudo genesis debootstrap --output ./rootfs --series ${{ github.event.inputs.series }}
+        run: sudo /.local/bin/genesis debootstrap --output ./rootfs --series ${{ github.event.inputs.series }}
       - name: creating tarball
         run: sudo tar czvf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
@@ -54,7 +54,7 @@ jobs:
                 qemu-system-x86 \
                 kpartx
       - name: installing genesis
-        run: sudo /opt/hostedtoolcache/Python/3.9.10/x64/bin/python -m pip install git+https://github.com/gjolly/genesis.git@cli
+        run: pip install git+https://github.com/gjolly/genesis.git@cli
       - uses: actions/download-artifact@master
         with:
           name: ${{ github.event.inputs.series }}-rootfs
@@ -62,10 +62,10 @@ jobs:
       - name: untar rootfs
         run: tar xvf rootfs.tar.gz
       - name: creating disk-image
-        run: sudo genesis create-disk --rootfs-dir ./rootfs
+        run: sudo ~/.local/bin/genesis create-disk --rootfs-dir ./rootfs
       - name: Updating the system
         run: |
-          sudo genesis update-system \
+          sudo ~/.local/bin/genesis update-system \
             --disk-image disk.img \
             --series focal \
             --extra-package cloud-init \
@@ -75,7 +75,7 @@ jobs:
             --extra-package linux-kvm
       - name: Install Grub
         run: |
-          sudo genesis install-grub --disk-image disk.img
+          sudo ~/.local/bin/genesis install-grub --disk-image disk.img
       - name: Converting to qcow2
         run: |
           sudo qemu-img convert -f raw -O qcow2 disk.img disk-image.img
