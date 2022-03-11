@@ -29,7 +29,7 @@ jobs:
       - name: installing genesis
         run: pip install git+https://github.com/gjolly/genesis.git@cli
       - name: running debootstrap
-        run: sudo /.local/bin/genesis debootstrap --output ./rootfs --series ${{ github.event.inputs.series }}
+        run: sudo ~/.local/bin/genesis debootstrap --output ./rootfs --series ${{ github.event.inputs.series }}
       - name: creating tarball
         run: sudo tar czvf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
