@@ -70,7 +70,7 @@ jobs:
             --extra-package curl \
             --extra-package git \
             --extra-package htop \
-            --extra-package linux-kvm \
+            --extra-package linux-virtual \
             --extra-package openssh-server \
             --extra-package tmux \
             --extra-package vim \
