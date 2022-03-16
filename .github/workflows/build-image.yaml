@@ -104,7 +104,6 @@ jobs:
         run: |
           sudo genesis install-packages \
             --disk-image disk.img \
-            --series ${{ github.event.inputs.series }} \
             --extra-package linux-kvm
       - name: Install Grub
         run: |
@@ -139,7 +138,6 @@ jobs:
         run: |
           sudo genesis install-packages \
             --disk-image disk.img \
-            --series ${{ github.event.inputs.series }} \
             --extra-package linux-azure \
             --extra-package walinuxagent
       - name: Install Grub
