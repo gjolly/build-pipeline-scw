@@ -31,7 +31,7 @@ jobs:
         run: sudo genesis debootstrap --output ./rootfs --series ${{ github.event.inputs.series }}
       - name: Updating the system
         run: |
-          sudo genesis install-packages \
+          sudo genesis update-system \
             --rootfs-dir ./rootfs \
             --series ${{ github.event.inputs.series }} \
             --extra-package apt-transport-https \
