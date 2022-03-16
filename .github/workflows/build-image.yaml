@@ -21,6 +21,7 @@ jobs:
         run: sudo apt-get update
       - name: installing dependencies
         run: |
+          sudo apt-get update && \
           sudo apt-get install -y \
                 debootstrap \
                 python3.9
@@ -28,6 +29,22 @@ jobs:
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: running debootstrap
         run: sudo genesis debootstrap --output ./rootfs --series ${{ github.event.inputs.series }}
+      - name: Updating the system
+        run: |
+          sudo genesis install-packages \
+            --rootfs-dir ./rootfs \
+            --series ${{ github.event.inputs.series }} \
+            --extra-package apt-transport-https \
+            --extra-package ca-certificates \
+            --extra-package cloud-guest-utils \
+            --extra-package cloud-init \
+            --extra-package curl \
+            --extra-package git \
+            --extra-package htop \
+            --extra-package openssh-server \
+            --extra-package tmux \
+            --extra-package vim \
+            --extra-package wget
       - name: creating tarball
         run: sudo tar czvf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
@@ -36,7 +53,9 @@ jobs:
           name: ${{ github.event.inputs.series }}-rootfs.tar.gz
           path: rootfs.tar.gz
 
-  image-build:
+  # this is an non-bootable binary image which does
+  # not include grub on any kernel
+  base-image:
     runs-on: ubuntu-latest
     needs: ['debootstrap']
     steps:
@@ -44,9 +63,9 @@ jobs:
         run: sudo apt-get update
       - name: installing dependencies
         run: |
+          sudo apt-get update && \
           sudo apt-get install -y \
                 qemu-utils \
-                qemu-system-x86 \
                 kpartx \
                 python3.9
       - name: installing genesis
@@ -58,31 +77,79 @@ jobs:
         run: sudo tar xf rootfs.tar.gz
       - name: creating disk-image
         run: sudo genesis create-disk --rootfs-dir ./rootfs
+      - name: Saving disk-image
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.inputs.series }}.img
+          path: disk.img
+
+  # kvm kernel + grub
+  kvm-image:
+    runs-on: ubuntu-latest
+    needs: ['base-image']
+    steps:
+      - name: installing dependencies
+        run: |
+          sudo apt-get update && \
+          sudo apt-get install -y \
+                qemu-utils \
+                kpartx \
+                python3.9
+      - uses: actions/download-artifact@master
+        with:
+          name: ${{ github.event.inputs.series }}.img
+      - name: installing genesis
+        run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: Updating the system
         run: |
-          sudo genesis update-system \
+          sudo genesis install-package \
             --disk-image disk.img \
-            --series focal \
-            --extra-package apt-transport-https \
-            --extra-package ca-certificates \
-            --extra-package cloud-guest-utils \
-            --extra-package cloud-init \
-            --extra-package curl \
-            --extra-package git \
-            --extra-package htop \
-            --extra-package linux-virtual \
-            --extra-package openssh-server \
-            --extra-package tmux \
-            --extra-package vim \
-            --extra-package wget
+            --series ${{ github.event.inputs.series }} \
+            --extra-package linux-kvm
       - name: Install Grub
         run: |
           sudo genesis install-grub --disk-image disk.img
       - name: Converting to qcow2
         run: |
-          sudo qemu-img convert -f raw -O qcow2 disk.img disk-image.img
+          sudo qemu-img convert -f raw -O qcow2 disk.img ${{ github.event.inputs.series }}-kvm.img
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
         with:
+          name: ${{ github.event.inputs.series }}-kvm.img
+          path: ${{ github.event.inputs.series }}-kvm.img
+
+  # azure kernel + grub + walinuxagent
+  azure-image:
+    runs-on: ubuntu-latest
+    needs: ['base-image']
+    steps:
+      - name: installing dependencies
+        run: |
+          sudo apt-get update && \
+          sudo apt-get install -y \
+                qemu-utils \
+                kpartx \
+                python3.9
+      - uses: actions/download-artifact@master
+        with:
           name: ${{ github.event.inputs.series }}.img
-          path: disk-image.img
+      - name: installing genesis
+        run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
+      - name: Updating the system
+        run: |
+          sudo genesis install-package \
+            --disk-image disk.img \
+            --series ${{ github.event.inputs.series }} \
+            --extra-package linux-azure \
+            --extra-package walinuxagent
+      - name: Install Grub
+        run: |
+          sudo genesis install-grub --disk-image disk.img
+      - name: Converting to qcow2
+        run: |
+          sudo qemu-img convert -f raw -O vpc disk.img ${{ github.event.inputs.series }}-azure.vhd
+      - name: Saving disk-image
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.inputs.series }}-azure.vhd
+          path: ${{ github.event.inputs.series }}-azure.vhd
