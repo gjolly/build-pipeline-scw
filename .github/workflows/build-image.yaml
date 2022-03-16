@@ -102,7 +102,7 @@ jobs:
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: Updating the system
         run: |
-          sudo genesis install-package \
+          sudo genesis install-packages \
             --disk-image disk.img \
             --series ${{ github.event.inputs.series }} \
             --extra-package linux-kvm
@@ -137,7 +137,7 @@ jobs:
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: Updating the system
         run: |
-          sudo genesis install-package \
+          sudo genesis install-packages \
             --disk-image disk.img \
             --series ${{ github.event.inputs.series }} \
             --extra-package linux-azure \
