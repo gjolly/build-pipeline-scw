@@ -7,8 +7,8 @@ on:
         required: true
         default: focal
         type: string
-      bootstrap_mirror:
-        description: Mirror to use to bootstrap the system
+      mirror:
+        description: Mirror to use after debootstrap
         required: true
         default: http://archive.ubuntu.com/ubuntu
         type: string
@@ -33,6 +33,7 @@ jobs:
         run: |
           sudo genesis update-system \
             --rootfs-dir ./rootfs \
+            --mirror "${{ github.event.inputs.mirror }}" \
             --series ${{ github.event.inputs.series }} \
             --extra-package apt-transport-https \
             --extra-package ca-certificates \
