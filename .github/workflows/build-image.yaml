@@ -104,7 +104,7 @@ jobs:
         run: |
           sudo genesis install-packages \
             --disk-image disk.img \
-            --extra-package linux-kvm
+            --package linux-kvm
       - name: Install Grub
         run: |
           sudo genesis install-grub --disk-image disk.img
@@ -138,8 +138,8 @@ jobs:
         run: |
           sudo genesis install-packages \
             --disk-image disk.img \
-            --extra-package linux-azure \
-            --extra-package walinuxagent
+            --package linux-azure \
+            --package walinuxagent
       - name: Install Grub
         run: |
           sudo genesis install-grub --disk-image disk.img
