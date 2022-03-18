@@ -1,0 +1,22 @@
+name: Build all series
+on:
+  workflow_dispatch:
+    inputs:
+      mirror:
+        description: Mirror to use after debootstrap
+        required: true
+        default: http://archive.ubuntu.com/ubuntu
+        type: string
+
+jobs:
+  bionic:
+    uses: ./.github/workflows/build-image.yaml
+    with:
+      series: bionic
+      mirror: "${{ github.event.inputs.mirror }}"
+
+  focal:
+    uses: ./.github/workflows/build-image.yaml
+    with:
+      series: focal
+      mirror: "${{ github.event.inputs.mirror }}"

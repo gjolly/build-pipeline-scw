@@ -1,6 +1,6 @@
 name: Ubuntu image build
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       series:
         description: Ubuntu series to build
@@ -28,13 +28,13 @@ jobs:
       - name: installing genesis
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: running debootstrap
-        run: sudo genesis debootstrap --output ./rootfs --series ${{ github.event.inputs.series }}
+        run: sudo genesis debootstrap --output ./rootfs --series ${{ inputs.series }}
       - name: Updating the system
         run: |
           sudo genesis update-system \
             --rootfs-dir ./rootfs \
-            --mirror "${{ github.event.inputs.mirror }}" \
-            --series ${{ github.event.inputs.series }} \
+            --mirror "${{ inputs.mirror }}" \
+            --series ${{ inputs.series }} \
             --extra-package apt-transport-https \
             --extra-package ca-certificates \
             --extra-package cloud-guest-utils \
@@ -51,7 +51,7 @@ jobs:
       - name: Saving rootfs tarball
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ github.event.inputs.series }}-rootfs.tar.gz
+          name: ${{ inputs.series }}-rootfs.tar.gz
           path: rootfs.tar.gz
 
   # this is an non-bootable binary image which does
@@ -73,7 +73,7 @@ jobs:
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - uses: actions/download-artifact@master
         with:
-          name: ${{ github.event.inputs.series }}-rootfs.tar.gz
+          name: ${{ inputs.series }}-rootfs.tar.gz
       - name: extract rootfs
         run: sudo tar xf rootfs.tar.gz
       - name: creating disk-image
@@ -81,7 +81,7 @@ jobs:
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ github.event.inputs.series }}.img
+          name: ${{ inputs.series }}.img
           path: disk.img
 
   # kvm kernel + grub
@@ -98,7 +98,7 @@ jobs:
                 python3.9
       - uses: actions/download-artifact@master
         with:
-          name: ${{ github.event.inputs.series }}.img
+          name: ${{ inputs.series }}.img
       - name: installing genesis
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: Updating the system
@@ -111,12 +111,12 @@ jobs:
           sudo genesis install-grub --disk-image disk.img
       - name: Converting to qcow2
         run: |
-          sudo qemu-img convert -f raw -O qcow2 disk.img ${{ github.event.inputs.series }}-kvm.img
+          sudo qemu-img convert -f raw -O qcow2 disk.img ${{ inputs.series }}-kvm.img
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ github.event.inputs.series }}-kvm.img
-          path: ${{ github.event.inputs.series }}-kvm.img
+          name: ${{ inputs.series }}-kvm.img
+          path: ${{ inputs.series }}-kvm.img
 
   # azure kernel + grub + walinuxagent
   azure-image:
@@ -132,7 +132,7 @@ jobs:
                 python3.9
       - uses: actions/download-artifact@master
         with:
-          name: ${{ github.event.inputs.series }}.img
+          name: ${{ inputs.series }}.img
       - name: installing genesis
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: Updating the system
@@ -146,9 +146,9 @@ jobs:
           sudo genesis install-grub --disk-image disk.img
       - name: Converting to qcow2
         run: |
-          sudo qemu-img convert -f raw -O vpc disk.img ${{ github.event.inputs.series }}-azure.vhd
+          sudo qemu-img convert -f raw -O vpc disk.img ${{ inputs.series }}-azure.vhd
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ github.event.inputs.series }}-azure.vhd
-          path: ${{ github.event.inputs.series }}-azure.vhd
+          name: ${{ inputs.series }}-azure.vhd
+          path: ${{ inputs.series }}-azure.vhd
