@@ -29,23 +29,6 @@ jobs:
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: running debootstrap
         run: sudo genesis debootstrap --output ./rootfs --series ${{ inputs.series }}
-      - name: Updating the system
-        run: |
-          sudo genesis update-system \
-            --rootfs-dir ./rootfs \
-            --mirror "${{ inputs.mirror }}" \
-            --series ${{ inputs.series }} \
-            --extra-package apt-transport-https \
-            --extra-package ca-certificates \
-            --extra-package cloud-guest-utils \
-            --extra-package cloud-init \
-            --extra-package curl \
-            --extra-package git \
-            --extra-package htop \
-            --extra-package openssh-server \
-            --extra-package tmux \
-            --extra-package vim \
-            --extra-package wget
       - name: creating tarball
         run: sudo tar czvf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
@@ -78,6 +61,23 @@ jobs:
         run: sudo tar xf rootfs.tar.gz
       - name: creating disk-image
         run: sudo genesis create-disk --rootfs-dir ./rootfs
+      - name: Updating the system
+        run: |
+          sudo genesis update-system \
+            --disk-image disk.img \
+            --mirror "${{ inputs.mirror }}" \
+            --series ${{ inputs.series }} \
+            --extra-package apt-transport-https \
+            --extra-package ca-certificates \
+            --extra-package cloud-guest-utils \
+            --extra-package cloud-init \
+            --extra-package curl \
+            --extra-package git \
+            --extra-package htop \
+            --extra-package openssh-server \
+            --extra-package tmux \
+            --extra-package vim \
+            --extra-package wget
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
         with:
