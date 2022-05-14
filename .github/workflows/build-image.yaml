@@ -1,5 +1,17 @@
 name: Ubuntu image build
 on:
+  workflow_dispatch:
+    inputs:
+      series:
+        description: Ubuntu series to build
+        required: true
+        default: focal
+        type: string
+      mirror:
+        description: Mirror to use after debootstrap
+        required: true
+        default: http://archive.ubuntu.com/ubuntu
+        type: string
   workflow_call:
     inputs:
       series:
