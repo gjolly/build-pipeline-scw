@@ -29,7 +29,7 @@ on:
 # or workflow_call.
 env:
   SERIES: ${{ github.event.inputs.series || inputs.mirror }}
-  MIRROR: ${{ github.event.inputs.series || inputs.mirror }}
+  MIRROR: ${{ github.event.inputs.mirror || inputs.mirror }}
 
 jobs:
   debootstrap:
