@@ -52,7 +52,7 @@ jobs:
       - name: Saving rootfs tarball
         uses: actions/upload-artifact@v3
         with:
-          name: $SERIES-rootfs.tar.gz
+          name: ${{ env.SERIES }}-rootfs.tar.gz
           path: rootfs.tar.gz
 
   # this is an non-bootable binary image which does
@@ -74,7 +74,7 @@ jobs:
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - uses: actions/download-artifact@master
         with:
-          name: $SERIES-rootfs.tar.gz
+          name: ${{ env.SERIES }}-rootfs.tar.gz
       - name: extract rootfs
         run: sudo tar xf rootfs.tar.gz
       - name: creating disk-image
@@ -89,7 +89,7 @@ jobs:
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
         with:
-          name: $SERIES.img
+          name: ${{ env.SERIES }}.img
           path: disk.img
 
   # kvm kernel + grub
@@ -106,7 +106,7 @@ jobs:
                 python3.9
       - uses: actions/download-artifact@master
         with:
-          name: $SERIES.img
+          name: ${{ env.SERIES }}.img
       - name: installing genesis
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: Updating the system
@@ -123,8 +123,8 @@ jobs:
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
         with:
-          name: $SERIES-kvm.img
-          path: $SERIES-kvm.img
+          name: ${{ env.SERIES }}-kvm.img
+          path: ${{ env.SERIES }}-kvm.img
 
   # azure kernel + grub + walinuxagent
   azure-image:
@@ -140,7 +140,7 @@ jobs:
                 python3.9
       - uses: actions/download-artifact@master
         with:
-          name: $SERIES.img
+          name: ${{ env.SERIES }}.img
       - name: installing genesis
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: Updating the system
@@ -158,5 +158,5 @@ jobs:
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
         with:
-          name: $SERIES-azure.vhd
-          path: $SERIES-azure.vhd
+          name: ${{ env.SERIES }}-azure.vhd
+          path: ${{ env.SERIES }}-azure.vhd
