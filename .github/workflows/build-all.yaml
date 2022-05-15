@@ -20,3 +20,9 @@ jobs:
     with:
       series: focal
       mirror: "${{ github.event.inputs.mirror }}"
+
+  jammy:
+    uses: ./.github/workflows/build-image.yaml
+    with:
+      series: jammy
+      mirror: "${{ github.event.inputs.mirror }}"
