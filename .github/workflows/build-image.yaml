@@ -25,6 +25,12 @@ on:
         default: http://archive.ubuntu.com/ubuntu
         type: string
 
+# variables path are inconsistent when triggering with workflow_dispatch
+# or workflow_call.
+env:
+  SERIES: ${{ github.event.inputs.series || inputs.mirror }}
+  MIRROR: ${{ github.event.inputs.series || inputs.mirror }}
+
 jobs:
   debootstrap:
     runs-on: ubuntu-latest
@@ -40,13 +46,13 @@ jobs:
       - name: installing genesis
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: running debootstrap
-        run: sudo genesis debootstrap --output ./rootfs --series ${{ inputs.series }}
+        run: sudo genesis debootstrap --output ./rootfs --series $SERIES
       - name: creating tarball
         run: sudo tar czvf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.series }}-rootfs.tar.gz
+          name: $SERIES-rootfs.tar.gz
           path: rootfs.tar.gz
 
   # this is an non-bootable binary image which does
@@ -68,7 +74,7 @@ jobs:
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - uses: actions/download-artifact@master
         with:
-          name: ${{ inputs.series }}-rootfs.tar.gz
+          name: $SERIES-rootfs.tar.gz
       - name: extract rootfs
         run: sudo tar xf rootfs.tar.gz
       - name: creating disk-image
@@ -77,8 +83,8 @@ jobs:
         run: |
           sudo genesis update-system \
             --disk-image disk.img \
-            --mirror "${{ inputs.mirror }}" \
-            --series ${{ inputs.series }} \
+            --mirror "$MIRROR" \
+            --series "$SERIES" \
             --extra-package apt-transport-https \
             --extra-package ca-certificates \
             --extra-package cloud-guest-utils \
@@ -93,7 +99,7 @@ jobs:
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.series }}.img
+          name: $SERIES.img
           path: disk.img
 
   # kvm kernel + grub
@@ -110,7 +116,7 @@ jobs:
                 python3.9
       - uses: actions/download-artifact@master
         with:
-          name: ${{ inputs.series }}.img
+          name: $SERIES.img
       - name: installing genesis
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: Updating the system
@@ -123,12 +129,12 @@ jobs:
           sudo genesis install-grub --disk-image disk.img
       - name: Converting to qcow2
         run: |
-          sudo qemu-img convert -f raw -O qcow2 disk.img ${{ inputs.series }}-kvm.img
+          sudo qemu-img convert -f raw -O qcow2 disk.img $SERIES-kvm.img
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.series }}-kvm.img
-          path: ${{ inputs.series }}-kvm.img
+          name: $SERIES-kvm.img
+          path: $SERIES-kvm.img
 
   # azure kernel + grub + walinuxagent
   azure-image:
@@ -144,7 +150,7 @@ jobs:
                 python3.9
       - uses: actions/download-artifact@master
         with:
-          name: ${{ inputs.series }}.img
+          name: $SERIES.img
       - name: installing genesis
         run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: Updating the system
@@ -158,9 +164,9 @@ jobs:
           sudo genesis install-grub --disk-image disk.img
       - name: Converting to qcow2
         run: |
-          sudo qemu-img convert -f raw -O vpc disk.img ${{ inputs.series }}-azure.vhd
+          sudo qemu-img convert -f raw -O vpc disk.img $SERIES-azure.vhd
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.series }}-azure.vhd
-          path: ${{ inputs.series }}-azure.vhd
+          name: $SERIES-azure.vhd
+          path: $SERIES-azure.vhd
