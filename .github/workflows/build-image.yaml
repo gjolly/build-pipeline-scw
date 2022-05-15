@@ -28,7 +28,7 @@ on:
 # variables path are inconsistent when triggering with workflow_dispatch
 # or workflow_call.
 env:
-  SERIES: ${{ github.event.inputs.series || inputs.mirror }}
+  SERIES: ${{ github.event.inputs.series || inputs.series }}
   MIRROR: ${{ github.event.inputs.mirror || inputs.mirror }}
 
 jobs:
