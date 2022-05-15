@@ -85,17 +85,7 @@ jobs:
             --disk-image disk.img \
             --mirror "$MIRROR" \
             --series "$SERIES" \
-            --extra-package apt-transport-https \
-            --extra-package ca-certificates \
-            --extra-package cloud-guest-utils \
-            --extra-package cloud-init \
-            --extra-package curl \
-            --extra-package git \
-            --extra-package htop \
-            --extra-package openssh-server \
-            --extra-package tmux \
-            --extra-package vim \
-            --extra-package wget
+            --extra-package ubuntu-server
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
         with:
