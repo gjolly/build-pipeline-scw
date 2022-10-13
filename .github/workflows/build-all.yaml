@@ -26,3 +26,9 @@ jobs:
     with:
       series: jammy
       mirror: "${{ github.event.inputs.mirror }}"
+
+  kinetic:
+    uses: ./.github/workflows/build-image.yaml
+    with:
+      series: kinetic
+      mirror: "${{ github.event.inputs.mirror }}"
