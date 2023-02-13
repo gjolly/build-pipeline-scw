@@ -41,10 +41,9 @@ jobs:
         run: |
           sudo apt-get update && \
           sudo apt-get install -y \
-                debootstrap \
-                python3.9
+                debootstrap
       - name: installing genesis
-        run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
+        run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: running debootstrap
         run: sudo genesis debootstrap --output ./rootfs --series $SERIES
       - name: creating tarball
@@ -68,10 +67,9 @@ jobs:
           sudo apt-get update && \
           sudo apt-get install -y \
                 qemu-utils \
-                kpartx \
-                python3.9
+                kpartx
       - name: installing genesis
-        run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
+        run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - uses: actions/download-artifact@master
         with:
           name: ${{ env.SERIES }}-rootfs.tar.gz
@@ -102,13 +100,12 @@ jobs:
           sudo apt-get update && \
           sudo apt-get install -y \
                 qemu-utils \
-                kpartx \
-                python3.9
+                kpartx
       - uses: actions/download-artifact@master
         with:
           name: ${{ env.SERIES }}.img
       - name: installing genesis
-        run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
+        run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: Updating the system
         run: |
           sudo genesis install-packages \
@@ -136,13 +133,12 @@ jobs:
           sudo apt-get update && \
           sudo apt-get install -y \
                 qemu-utils \
-                kpartx \
-                python3.9
+                kpartx
       - uses: actions/download-artifact@master
         with:
           name: ${{ env.SERIES }}.img
       - name: installing genesis
-        run: sudo python3.9 -m pip install git+https://github.com/gjolly/genesis.git@cli
+        run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: Updating the system
         run: |
           sudo genesis install-packages \
