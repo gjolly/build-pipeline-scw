@@ -32,3 +32,9 @@ jobs:
     with:
       series: kinetic
       mirror: "${{ github.event.inputs.mirror }}"
+
+  lunar:
+    uses: ./.github/workflows/build-image.yaml
+    with:
+      series: lunar
+      mirror: "${{ github.event.inputs.mirror }}"
