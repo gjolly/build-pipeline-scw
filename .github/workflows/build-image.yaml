@@ -10,7 +10,7 @@ on:
       mirror:
         description: Mirror to use after debootstrap
         required: true
-        default: http://archive.ubuntu.com/ubuntu
+        default: http://azure.archive.ubuntu.com/ubuntu
         type: string
   workflow_call:
     inputs:
@@ -22,7 +22,7 @@ on:
       mirror:
         description: Mirror to use after debootstrap
         required: true
-        default: http://archive.ubuntu.com/ubuntu
+        default: http://azure.archive.ubuntu.com/ubuntu
         type: string
 
 # variables path are inconsistent when triggering with workflow_dispatch
@@ -54,8 +54,6 @@ jobs:
           name: ${{ env.SERIES }}-rootfs.tar.gz
           path: rootfs.tar.gz
 
-  # this is an non-bootable binary image which does
-  # not include grub on any kernel
   base-image:
     runs-on: ubuntu-latest
     needs: ['debootstrap']
@@ -83,76 +81,20 @@ jobs:
             --disk-image disk.img \
             --mirror "$MIRROR" \
             --series "$SERIES" \
-            --extra-package ubuntu-server
-      - name: Saving disk-image
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.SERIES }}.img
-          path: disk.img
-
-  # kvm kernel + grub
-  kvm-image:
-    runs-on: ubuntu-latest
-    needs: ['base-image']
-    steps:
-      - name: installing dependencies
-        run: |
-          sudo apt-get update && \
-          sudo apt-get install -y \
-                qemu-utils \
-                kpartx
-      - uses: actions/download-artifact@master
-        with:
-          name: ${{ env.SERIES }}.img
-      - name: installing genesis
-        run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@cli
-      - name: Updating the system
-        run: |
-          sudo genesis install-packages \
-            --disk-image disk.img \
-            --package linux-kvm
+            --extra-package vim \
+            --extra-package ca-certificate \
+            --extra-package openssh-server \
+            --extra-package cloud-init \
+            --extra-package curl \
+            --extra-package linux-generic
       - name: Install Grub
         run: |
           sudo genesis install-grub --disk-image disk.img
       - name: Converting to qcow2
         run: |
-          sudo qemu-img convert -f raw -O qcow2 disk.img $SERIES-kvm.img
+          sudo qemu-img convert -f raw -O qcow2 disk.img $SERIES.img
       - name: Saving disk-image
         uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.SERIES }}-kvm.img
-          path: ${{ env.SERIES }}-kvm.img
-
-  # azure kernel + grub + walinuxagent
-  azure-image:
-    runs-on: ubuntu-latest
-    needs: ['base-image']
-    steps:
-      - name: installing dependencies
-        run: |
-          sudo apt-get update && \
-          sudo apt-get install -y \
-                qemu-utils \
-                kpartx
-      - uses: actions/download-artifact@master
         with:
           name: ${{ env.SERIES }}.img
-      - name: installing genesis
-        run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@cli
-      - name: Updating the system
-        run: |
-          sudo genesis install-packages \
-            --disk-image disk.img \
-            --package linux-azure \
-            --package walinuxagent
-      - name: Install Grub
-        run: |
-          sudo genesis install-grub --disk-image disk.img
-      - name: Converting to qcow2
-        run: |
-          sudo qemu-img convert -f raw -O vpc disk.img $SERIES-azure.vhd
-      - name: Saving disk-image
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.SERIES }}-azure.vhd
-          path: ${{ env.SERIES }}-azure.vhd
+          path: ${{ env.SERIES }}.img
