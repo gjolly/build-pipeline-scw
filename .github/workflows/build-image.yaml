@@ -17,7 +17,7 @@ on:
       series:
         description: Ubuntu series to build
         required: true
-        default: focal
+        default: noble
         type: string
       mirror:
         description: Mirror to use after debootstrap
