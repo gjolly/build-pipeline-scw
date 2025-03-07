@@ -82,7 +82,7 @@ jobs:
             --mirror "$MIRROR" \
             --series "$SERIES" \
             --extra-package vim \
-            --extra-package ca-certificate \
+            --extra-package ca-certificates \
             --extra-package openssh-server \
             --extra-package cloud-init \
             --extra-package curl \
