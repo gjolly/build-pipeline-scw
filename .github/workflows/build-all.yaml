@@ -10,21 +10,37 @@ jobs:
     with:
       series: jammy
     secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
 
   oracular:
     uses: ./.github/workflows/build-image.yaml
     with:
       series: oracular
     secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
 
   noble:
     uses: ./.github/workflows/build-image.yaml
     with:
       series: noble
     secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
 
   plucky:
     uses: ./.github/workflows/build-image.yaml
     with:
       series: plucky
     secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
