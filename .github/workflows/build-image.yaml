@@ -45,7 +45,7 @@ jobs:
       - name: running debootstrap
         run: sudo genesis debootstrap --output ./rootfs --series $SERIES --mirror "${{ matrix.arch.mirror }}"
       - name: creating tarball
-        run: sudo tar czvf rootfs.tar.gz ./rootfs
+        run: sudo tar czf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
         uses: actions/upload-artifact@v4
         with:
