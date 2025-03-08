@@ -5,7 +5,7 @@ on:
       series:
         description: Ubuntu series to build
         required: true
-        default: focal
+        default: noble
         type: string
       mirror:
         description: Mirror to use after debootstrap
@@ -33,7 +33,14 @@ env:
 
 jobs:
   debootstrap:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch:
+          - name: 'amd64'
+            os: ubuntu-24.04
+          - name: 'arm64'
+            os: ubuntu-24.04-arm
+    runs-on: ${{ matrix.arch.os }}
     steps:
       - name: update APT cache
         run: sudo apt-get update
@@ -51,11 +58,18 @@ jobs:
       - name: Saving rootfs tarball
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.SERIES }}-rootfs.tar.gz
+          name: ${{ env.SERIES }}-${{ matrix.arch.name }}-rootfs.tar.gz
           path: rootfs.tar.gz
 
   base-image:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch:
+          - name: 'amd64'
+            os: ubuntu-24.04
+          - name: 'arm64'
+            os: ubuntu-24.04-arm
+    runs-on: ${{ matrix.arch.os }}
     needs: ['debootstrap']
     steps:
       - name: update APT cache
@@ -70,7 +84,7 @@ jobs:
         run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - uses: actions/download-artifact@master
         with:
-          name: ${{ env.SERIES }}-rootfs.tar.gz
+          name: ${{ env.SERIES }}-${{ matrix.arch.name }}-rootfs.tar.gz
       - name: extract rootfs
         run: sudo tar xf rootfs.tar.gz
       - name: creating disk-image
@@ -96,5 +110,5 @@ jobs:
       - name: Saving disk-image
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.SERIES }}.img
+          name: ${{ env.SERIES }}-${{ matrix.arch.name }}.img
           path: ${{ env.SERIES }}.img
