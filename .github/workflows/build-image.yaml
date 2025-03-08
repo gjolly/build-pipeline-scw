@@ -19,6 +19,10 @@ on:
 # or workflow_call.
 env:
   SERIES: ${{ github.event.inputs.series || inputs.series }}
+  ORACLE_REGION: eu-marseille-1
+  ORACLE_BUCKET_NAMESPACE: axd1qa3z3pet
+  ORACLE_BUCKET_NAME: live-images
+  ORACLE_BUCKET_URL: https://objectstorage.$ORACLE_REGION.oraclecloud.com/p/${{ secrets.ORACLE_BUCKET_TOKEN }}/n/$ORACLE_BUCKET_NAMESPACE/b/$ORACLE_BUCKET_NAME/o/
 
 jobs:
   debootstrap:
@@ -39,6 +43,7 @@ jobs:
         run: |
           sudo apt-get update && \
           sudo apt-get install -y \
+                qemu-utils \
                 debootstrap
       - name: installing genesis
         run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@main
@@ -47,39 +52,11 @@ jobs:
       - name: creating tarball
         run: sudo tar czf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.SERIES }}-${{ matrix.arch.name }}-rootfs.tar.gz
-          path: rootfs.tar.gz
-
-  base-image:
-    strategy:
-      matrix:
-        arch:
-          - name: 'amd64'
-            os: ubuntu-24.04
-            mirror: http://azure.archive.ubuntu.com/ubuntu
-          - name: 'arm64'
-            os: ubuntu-24.04-arm
-            mirror: http://azure.ports.ubuntu.com/ubuntu-ports
-    runs-on: ${{ matrix.arch.os }}
-    needs: ['debootstrap']
-    steps:
-      - name: update APT cache
-        run: sudo apt-get update
-      - name: installing dependencies
         run: |
-          sudo apt-get update && \
-          sudo apt-get install -y \
-                qemu-utils \
-                kpartx
-      - name: installing genesis
-        run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@main
-      - uses: actions/download-artifact@master
-        with:
-          name: ${{ env.SERIES }}-${{ matrix.arch.name }}-rootfs.tar.gz
-      - name: extract rootfs
-        run: sudo tar xf rootfs.tar.gz
+          curl -X PUT -T rootfs.tar.gz \
+            -H "Content-Type: application/octet-stream" \
+            "$ORACLE_BASE_URL/$SUITE-${{ matrix.arch.name }}-rootfs.tar.gz"
+
       - name: creating disk-image
         run: sudo genesis create-disk --rootfs-dir ./rootfs
       - name: Updating the system
@@ -99,9 +76,9 @@ jobs:
           sudo genesis install-grub --disk-image disk.img
       - name: Converting to qcow2
         run: |
-          sudo qemu-img convert -f raw -O qcow2 disk.img $SERIES.img
+          sudo qemu-img convert -f raw -O qcow2 disk.img disk.qcow2
       - name: Saving disk-image
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.SERIES }}-${{ matrix.arch.name }}.img
-          path: ${{ env.SERIES }}.img
+        run: |
+          curl -X PUT -T disk.qcow2 \
+            -H "Content-Type: application/octet-stream" \
+            "$ORACLE_BASE_URL/$SUITE-${{ matrix.arch.name }}.img"
