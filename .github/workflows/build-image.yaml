@@ -7,11 +7,6 @@ on:
         required: true
         default: noble
         type: string
-      mirror:
-        description: Mirror to use after debootstrap
-        required: true
-        default: http://azure.archive.ubuntu.com/ubuntu
-        type: string
   workflow_call:
     inputs:
       series:
@@ -19,17 +14,11 @@ on:
         required: true
         default: noble
         type: string
-      mirror:
-        description: Mirror to use after debootstrap
-        required: true
-        default: http://azure.archive.ubuntu.com/ubuntu
-        type: string
 
 # variables path are inconsistent when triggering with workflow_dispatch
 # or workflow_call.
 env:
   SERIES: ${{ github.event.inputs.series || inputs.series }}
-  MIRROR: ${{ github.event.inputs.mirror || inputs.mirror }}
 
 jobs:
   debootstrap:
@@ -38,8 +27,10 @@ jobs:
         arch:
           - name: 'amd64'
             os: ubuntu-24.04
+            mirror: http://azure.archive.ubuntu.com/ubuntu
           - name: 'arm64'
             os: ubuntu-24.04-arm
+            mirror: http://azure.ports.ubuntu.com/ubuntu-ports
     runs-on: ${{ matrix.arch.os }}
     steps:
       - name: update APT cache
@@ -52,7 +43,7 @@ jobs:
       - name: installing genesis
         run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@cli
       - name: running debootstrap
-        run: sudo genesis debootstrap --output ./rootfs --series $SERIES
+        run: sudo genesis debootstrap --output ./rootfs --series $SERIES --mirror "${{ matrix.arch.mirror }}"
       - name: creating tarball
         run: sudo tar czvf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
@@ -67,8 +58,10 @@ jobs:
         arch:
           - name: 'amd64'
             os: ubuntu-24.04
+            mirror: http://azure.archive.ubuntu.com/ubuntu
           - name: 'arm64'
             os: ubuntu-24.04-arm
+            mirror: http://azure.ports.ubuntu.com/ubuntu-ports
     runs-on: ${{ matrix.arch.os }}
     needs: ['debootstrap']
     steps:
@@ -93,7 +86,7 @@ jobs:
         run: |
           sudo genesis update-system \
             --disk-image disk.img \
-            --mirror "$MIRROR" \
+            --mirror "${{ matrix.arch.mirror }}" \
             --series "$SERIES" \
             --extra-package vim \
             --extra-package ca-certificates \

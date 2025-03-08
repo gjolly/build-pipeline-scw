@@ -1,34 +1,24 @@
 name: Build all series
 on:
   workflow_dispatch:
-    inputs:
-      mirror:
-        description: Mirror to use after debootstrap
-        required: true
-        default: http://archive.ubuntu.com/ubuntu
-        type: string
 
 jobs:
   jammy:
     uses: ./.github/workflows/build-image.yaml
     with:
       series: jammy
-      mirror: "${{ github.event.inputs.mirror }}"
 
   oracular:
     uses: ./.github/workflows/build-image.yaml
     with:
       series: oracular
-      mirror: "${{ github.event.inputs.mirror }}"
 
   noble:
     uses: ./.github/workflows/build-image.yaml
     with:
       series: noble
-      mirror: "${{ github.event.inputs.mirror }}"
 
   plucky:
     uses: ./.github/workflows/build-image.yaml
     with:
       series: plucky
-      mirror: "${{ github.event.inputs.mirror }}"
