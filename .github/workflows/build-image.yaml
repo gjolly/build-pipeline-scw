@@ -19,10 +19,7 @@ on:
 # or workflow_call.
 env:
   SERIES: ${{ github.event.inputs.series || inputs.series }}
-  ORACLE_REGION: eu-marseille-1
-  ORACLE_BUCKET_NAMESPACE: axd1qa3z3pet
-  ORACLE_BUCKET_NAME: live-images
-  ORACLE_BUCKET_URL: https://objectstorage.${ORACLE_REGION}.oraclecloud.com/p/${{ secrets.ORACLE_BUCKET_TOKEN }}/n/${ORACLE_BUCKET_NAMESPACE}/b/${ORACLE_BUCKET_NAME}/o
+  ORACLE_BUCKET_URL: https://objectstorage.eu-marseille-1.oraclecloud.com/p/${{ secrets.ORACLE_BUCKET_TOKEN }}/n/axd1qa3z3pet/b/live-images/o
 
 jobs:
   debootstrap:
