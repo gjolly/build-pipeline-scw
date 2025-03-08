@@ -41,7 +41,7 @@ jobs:
           sudo apt-get install -y \
                 debootstrap
       - name: installing genesis
-        run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@cli
+        run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@main
       - name: running debootstrap
         run: sudo genesis debootstrap --output ./rootfs --series $SERIES --mirror "${{ matrix.arch.mirror }}"
       - name: creating tarball
@@ -74,7 +74,7 @@ jobs:
                 qemu-utils \
                 kpartx
       - name: installing genesis
-        run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@cli
+        run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@main
       - uses: actions/download-artifact@master
         with:
           name: ${{ env.SERIES }}-${{ matrix.arch.name }}-rootfs.tar.gz
