@@ -22,7 +22,7 @@ env:
   ORACLE_REGION: eu-marseille-1
   ORACLE_BUCKET_NAMESPACE: axd1qa3z3pet
   ORACLE_BUCKET_NAME: live-images
-  ORACLE_BUCKET_URL: https://objectstorage.$ORACLE_REGION.oraclecloud.com/p/${{ secrets.ORACLE_BUCKET_TOKEN }}/n/$ORACLE_BUCKET_NAMESPACE/b/$ORACLE_BUCKET_NAME/o/
+  ORACLE_BUCKET_URL: https://objectstorage.${ORACLE_REGION}.oraclecloud.com/p/${{ secrets.ORACLE_BUCKET_TOKEN }}/n/${ORACLE_BUCKET_NAMESPACE}/b/${ORACLE_BUCKET_NAME}/o
 
 jobs:
   debootstrap:
@@ -55,7 +55,7 @@ jobs:
         run: |
           curl -X PUT -T rootfs.tar.gz \
             -H "Content-Type: application/octet-stream" \
-            "$ORACLE_BUCKET_URL/$SUITE-${{ matrix.arch.name }}-rootfs.tar.gz"
+            "${ORACLE_BUCKET_URL}/$SUITE-${{ matrix.arch.name }}-rootfs.tar.gz"
 
       - name: creating disk-image
         run: sudo genesis create-disk --rootfs-dir ./rootfs
