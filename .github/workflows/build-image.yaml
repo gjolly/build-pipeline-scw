@@ -55,7 +55,7 @@ jobs:
         run: |
           curl -X PUT -T rootfs.tar.gz \
             -H "Content-Type: application/octet-stream" \
-            "$ORACLE_BASE_URL/$SUITE-${{ matrix.arch.name }}-rootfs.tar.gz"
+            "$ORACLE_BUCKET_URL/$SUITE-${{ matrix.arch.name }}-rootfs.tar.gz"
 
       - name: creating disk-image
         run: sudo genesis create-disk --rootfs-dir ./rootfs
@@ -81,4 +81,4 @@ jobs:
         run: |
           curl -X PUT -T disk.qcow2 \
             -H "Content-Type: application/octet-stream" \
-            "$ORACLE_BASE_URL/$SUITE-${{ matrix.arch.name }}.img"
+            "$ORACLE_BUCKET_URL/$SUITE-${{ matrix.arch.name }}.img"
