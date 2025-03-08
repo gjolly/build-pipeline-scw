@@ -54,11 +54,6 @@ jobs:
         run: sudo genesis debootstrap --output ./rootfs --series $SERIES --mirror "${{ matrix.arch.mirror }}"
       - name: creating tarball
         run: sudo tar czf rootfs.tar.gz ./rootfs
-      - name: Saving rootfs tarball
-        run: |
-          curl -X PUT -T rootfs.tar.gz \
-            -H "Content-Type: application/octet-stream" \
-            "${ORACLE_BUCKET_URL}/$SERIES-${{ matrix.arch.name }}-rootfs.tar.gz"
 
       - name: creating disk-image
         run: sudo genesis create-disk --rootfs-dir ./rootfs
@@ -90,7 +85,7 @@ jobs:
         id: attest
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: 'rootfs.tar.gz, disk.img'
+          subject-path: 'disk.img'
 
       - name: Saving attestation
         run: |
