@@ -57,3 +57,34 @@ Images produced here are unofficial and not supported by Canonical, however they
         </tr>
     </tbody>
 </table>
+
+# Attestation - How can you verify that these image were built on Github?
+
+All the artifacts built here are attested to establish their provenance. You can use the Github CLI to verify that a given artifact that you download was indeed built here. For example, for the Ubuntu 22.04 LTS "Noble Numbat" AMD64 image:
+
+```bash
+gh attestation verify noble-amd64.img -o gjolly
+```
+
+And you should see something like this:
+
+```
+Loaded digest sha256:aa14d0671d23dc7ee74b8950dc6dc0224209a61d7b415e40f4c1b234398d5f05 for file://noble-amd64.img
+Loaded 1 attestation from GitHub API
+
+The following policy criteria will be enforced:
+- Predicate type must match:................ https://slsa.dev/provenance/v1
+- Source Repository Owner URI must match:... https://github.com/gjolly
+- Subject Alternative Name must match regex: (?i)^https://github.com/gjolly/
+- OIDC Issuer must match:................... https://token.actions.githubusercontent.com
+
+✓ Verification succeeded!
+
+The following 1 attestation matched the policy criteria
+
+- Attestation #1
+  - Build repo:..... gjolly/build-pipeline
+  - Build workflow:. .github/workflows/build-image.yaml@refs/heads/main
+  - Signer repo:.... gjolly/build-pipeline
+  - Signer workflow: .github/workflows/build-image.yaml@refs/heads/main
+```
