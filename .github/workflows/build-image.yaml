@@ -17,12 +17,9 @@ on:
 
 # variables path are inconsistent when triggering with workflow_dispatch
 # or workflow_call.
-env:
-  SERIES: ${{ github.event.inputs.series || inputs.series }}
-  ORACLE_BUCKET_URL: https://objectstorage.eu-marseille-1.oraclecloud.com/p/${{ secrets.ORACLE_BUCKET_TOKEN }}/n/axd1qa3z3pet/b/live-images/o
-
 jobs:
   debootstrap:
+
     strategy:
       matrix:
         arch:
@@ -32,7 +29,12 @@ jobs:
           - name: 'arm64'
             os: ubuntu-24.04-arm
             mirror: http://azure.ports.ubuntu.com/ubuntu-ports
+    environment: secrets
     runs-on: ${{ matrix.arch.os }}
+    env:
+      SERIES: ${{ github.event.inputs.series || inputs.series }}
+      ORACLE_BUCKET_URL: https://objectstorage.eu-marseille-1.oraclecloud.com/p/${{ secrets.ORACLE_BUCKET_TOKEN }}/n/axd1qa3z3pet/b/live-images/o
+
     steps:
       - name: update APT cache
         run: sudo apt-get update
@@ -49,9 +51,6 @@ jobs:
       - name: creating tarball
         run: sudo tar czf rootfs.tar.gz ./rootfs
       - name: Saving rootfs tarball
-        env:
-          SERIES: ${{ github.event.inputs.series || inputs.series }}
-          ORACLE_BUCKET_URL: https://objectstorage.eu-marseille-1.oraclecloud.com/p/${{ secrets.ORACLE_BUCKET_TOKEN }}/n/axd1qa3z3pet/b/live-images/o
         run: |
           curl -X PUT -T rootfs.tar.gz \
             -H "Content-Type: application/octet-stream" \
