@@ -18,7 +18,7 @@ on:
 # variables path are inconsistent when triggering with workflow_dispatch
 # or workflow_call.
 jobs:
-  debootstrap:
+  build:
 
     strategy:
       matrix:
