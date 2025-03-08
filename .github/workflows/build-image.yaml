@@ -34,6 +34,10 @@ jobs:
     env:
       SERIES: ${{ github.event.inputs.series || inputs.series }}
       ORACLE_BUCKET_URL: https://objectstorage.eu-marseille-1.oraclecloud.com/p/${{ secrets.ORACLE_BUCKET_TOKEN }}/n/axd1qa3z3pet/b/live-images/o
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
 
     steps:
       - name: update APT cache
@@ -81,3 +85,15 @@ jobs:
           curl -X PUT -T disk.qcow2 \
             -H "Content-Type: application/octet-stream" \
             "$ORACLE_BUCKET_URL/$SERIES-${{ matrix.arch.name }}.img"
+
+      - name: Attest Artifacts
+        id: attest
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: 'rootfs.tar.gz, disk.img'
+
+      - name: Saving attestation
+        run: |
+          curl -X PUT -T ${{ steps.attest.outputs.bundle-path }} \
+            -H "Content-Type: application/json" \
+            "$ORACLE_BUCKET_URL/$SERIES-${{ matrix.arch.name }}.attestation.json"
