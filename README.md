@@ -6,6 +6,10 @@ This repository contains the configuration for an image build pipeline of Ubuntu
 
 Images produced here are unofficial and not supported by Canonical, however they only contain official packages from Ubuntu.
 
+# Last built images
+
+![Today's build results](https://github.com/gjolly/build-pipeline/actions/workflows/build-all.yaml/badge.svg)
+
 <table>
     <thead>
         <tr>
@@ -53,4 +57,3 @@ Images produced here are unofficial and not supported by Canonical, however they
         </tr>
     </tbody>
 </table>
-
