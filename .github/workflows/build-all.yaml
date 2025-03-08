@@ -9,18 +9,26 @@ jobs:
     uses: ./.github/workflows/build-image.yaml
     with:
       series: jammy
+    environment: secrets
+    secrets: inherit
 
   oracular:
     uses: ./.github/workflows/build-image.yaml
     with:
       series: oracular
+    environment: secrets
+    secrets: inherit
 
   noble:
     uses: ./.github/workflows/build-image.yaml
     with:
       series: noble
+    environment: secrets
+    secrets: inherit
 
   plucky:
     uses: ./.github/workflows/build-image.yaml
     with:
       series: plucky
+    environment: secrets
+    secrets: inherit
