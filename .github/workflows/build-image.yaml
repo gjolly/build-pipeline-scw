@@ -68,6 +68,7 @@ jobs:
             --extra-package openssh-server \
             --extra-package cloud-init \
             --extra-package curl \
+            --extra-package linux-modules-nvidia-570-generic \
             --extra-package linux-generic
       - name: Install Grub
         run: |
