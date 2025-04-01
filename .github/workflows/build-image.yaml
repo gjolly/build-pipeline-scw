@@ -29,11 +29,9 @@ jobs:
           - name: 'arm64'
             os: ubuntu-24.04-arm
             mirror: http://azure.ports.ubuntu.com/ubuntu-ports
-    environment: secrets
     runs-on: ${{ matrix.arch.os }}
     env:
       SERIES: ${{ github.event.inputs.series || inputs.series }}
-      ORACLE_BUCKET_URL: https://objectstorage.eu-marseille-1.oraclecloud.com/p/${{ secrets.ORACLE_BUCKET_TOKEN }}/n/axd1qa3z3pet/b/live-images/o
     permissions:
       id-token: write
       contents: read
@@ -76,20 +74,3 @@ jobs:
       - name: Converting to qcow2
         run: |
           sudo qemu-img convert -f raw -O qcow2 disk.img disk.qcow2
-      - name: Saving disk-image
-        run: |
-          curl -X PUT -T disk.qcow2 \
-            -H "Content-Type: application/octet-stream" \
-            "$ORACLE_BUCKET_URL/$SERIES-${{ matrix.arch.name }}.img"
-
-      - name: Attest Artifacts
-        id: attest
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-path: 'disk.img'
-
-      - name: Saving attestation
-        run: |
-          curl -X PUT -T ${{ steps.attest.outputs.bundle-path }} \
-            -H "Content-Type: application/json" \
-            "$ORACLE_BUCKET_URL/$SERIES-${{ matrix.arch.name }}.attestation.json"
