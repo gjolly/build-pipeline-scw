@@ -70,10 +70,10 @@ jobs:
       # see https://forums.developer.nvidia.com/t/nvrm-this-pci-i-o-region-assigned-to-your-nvidia-device-is-invalid/229899/2
       - name: Configure Kernel command line
         run: |
-          echo 'GRUB_CMDLINE_LINUX=$GRUB_CMDLINE_LINUX pci=realloc' > 99-cmdline.cfg
+          echo 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX pci=realloc"' > zz-cmdline.cfg
           sudo genesis copy-files \
             --disk-image disk.img \
-            --file ./99-cmdline.cfg:/etc/default/grub.d/99-cmdline.cfg
+            --file ./zz-cmdline.cfg:/etc/default/grub.d/zz-cmdline.cfg
       - name: Install Grub
         run: |
           sudo genesis install-grub --disk-image disk.img
