@@ -29,6 +29,7 @@ jobs:
     runs-on: ${{ matrix.arch.os }}
     env:
       SERIES: ${{ github.event.inputs.series || inputs.series }}
+      DRIVER_VERSION: '570'
     permissions:
       id-token: write
       contents: read
@@ -63,8 +64,16 @@ jobs:
             --extra-package openssh-server \
             --extra-package cloud-init \
             --extra-package curl \
-            --extra-package linux-modules-nvidia-570-server-generic \
+            --extra-package "linux-modules-nvidia-${DRIVER_VERSION}-server-generic" \
+            --extra-package "nvidia-utils-${DRIVER_VERSION}-server" \
             --extra-package linux-generic
+      # see https://forums.developer.nvidia.com/t/nvrm-this-pci-i-o-region-assigned-to-your-nvidia-device-is-invalid/229899/2
+      - name: Configure Kernel command line
+        run: |
+          echo 'GRUB_CMDLINE_LINUX=$GRUB_CMDLINE_LINUX pci=realloc' > 99-cmdline.cfg
+          sudo genesis copy-files \
+            --disk-image disk.img \
+            --file ./99-cmdline.cfg:/etc/default/grub.d/99-cmdline.cfg
       - name: Install Grub
         run: |
           sudo genesis install-grub --disk-image disk.img
