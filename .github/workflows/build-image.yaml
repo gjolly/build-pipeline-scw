@@ -52,7 +52,7 @@ jobs:
         run: sudo tar czf rootfs.tar.gz ./rootfs
 
       - name: creating disk-image
-        run: sudo genesis create-disk --rootfs-dir ./rootfs
+        run: sudo genesis create-disk --size 4 --rootfs-dir ./rootfs
       - name: Updating the system
         run: |
           sudo genesis update-system \
