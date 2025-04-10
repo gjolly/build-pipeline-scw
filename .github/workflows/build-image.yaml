@@ -26,6 +26,7 @@ jobs:
           - name: 'amd64'
             os: ubuntu-24.04
             mirror: http://azure.archive.ubuntu.com/ubuntu
+    environment: secrets
     runs-on: ${{ matrix.arch.os }}
     env:
       SERIES: ${{ github.event.inputs.series || inputs.series }}
@@ -43,7 +44,8 @@ jobs:
           sudo apt-get update && \
           sudo apt-get install -y \
                 qemu-utils \
-                debootstrap
+                debootstrap \
+                s3cmd
       - name: installing genesis
         run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@main
       - name: running debootstrap
@@ -80,7 +82,13 @@ jobs:
       - name: Converting to qcow2
         run: |
           sudo qemu-img convert -f raw -O qcow2 disk.img disk.qcow2
-      - uses: actions/upload-artifact@v4
-        with:
-          name: image
-          path: disk.qcow2
+      - name: Upload to Scaleway
+        run: |
+          s3cmd \
+            --ssl \
+            --bucket-location='fr-par' \
+            --host='s3.fr-par.scw.cloud' \
+            --host-bucket='%(bucket)s.s3.fr-par.scw.cloud' \
+            --access_key ${{ secrets.S3_ACCESS_KEY }} \
+            --secret_key ${{ secrets.S3_SECRET_KEY }} \
+              put file ./disk.qcow2 "s3://gjolly-images/ubuntu-${SERIES}-$(date +%Y%m%d)-nvidia-${DRIVER_VERSION}.qcow2"
