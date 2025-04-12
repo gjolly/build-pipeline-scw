@@ -1,0 +1,129 @@
+name: Ubuntu 24.04 LTS Ollama image build
+on:
+  workflow_dispatch:
+    inputs:
+      series:
+        description: Ubuntu series to build
+        required: true
+        default: noble
+        type: string
+  workflow_call:
+    inputs:
+      series:
+        description: Ubuntu series to build
+        required: true
+        default: noble
+        type: string
+
+# variables path are inconsistent when triggering with workflow_dispatch
+# or workflow_call.
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        arch:
+          - name: 'amd64'
+            os: ubuntu-24.04
+            mirror: http://azure.archive.ubuntu.com/ubuntu
+    environment: secrets
+    runs-on: ${{ matrix.arch.os }}
+    env:
+      SERIES: ${{ github.event.inputs.series || inputs.series }}
+      DRIVER_VERSION: '570'
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
+
+    steps:
+      - name: update APT cache
+        run: sudo apt-get update
+      - name: installing dependencies
+        run: |
+          sudo apt-get update && \
+          sudo apt-get install -y \
+                qemu-utils \
+                debootstrap \
+                s3cmd
+      - name: installing genesis
+        run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@main
+      - name: running debootstrap
+        run: sudo genesis debootstrap --output ./rootfs --series "$SERIES" --mirror "${{ matrix.arch.mirror }}"
+      - name: Install 3rd party repositories - Docker
+        run: |
+          sudo install -m 0755 -d ./rootfs/etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o docker.asc
+
+          sudo mv docker.asc ./rootfs/etc/apt/keyrings/docker.asc
+          sudo chmod a+r ./rootfs/etc/apt/keyrings/docker.asc
+
+          # Add the repository to Apt sources:
+          cat << EOF > docker.list
+          deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu "$SERIES" stable
+          EOF
+          sudo mv docker.list ./rootfs/etc/apt/sources.list.d/docker.list
+      - name: Install 3rd party repositories - NVIDIA
+        run: |
+          curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor | sudo tee ./rootfs/etc/apt/keyrings/nvidia-container-toolkit-keyring.gpg >/dev/null
+          curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | sed 's#deb https://#deb [signed-by=/etc/apt/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | sudo tee ./rootfs/etc/apt/sources.list.d/nvidia-container-toolkit.list > /dev/null
+      - name: Configuring Docker to use NVIDIA
+        run: |
+          cat << EOF > daemon.json
+          {
+            "runtimes": {
+              "nvidia": {
+                "args": [],
+                "path": "nvidia-container-runtime"
+              }
+            }
+          }
+          EOF
+
+          sudo install -m 0755 -d ./rootfs/etc/docker
+          sudo mv daemon.json ./rootfs/etc/docker/daemon.json
+      - name: creating disk-image
+        run: sudo genesis create-disk --size 4 --rootfs-dir ./rootfs
+      - name: Updating the system
+        run: |
+          sudo genesis update-system \
+            --disk-image disk.img \
+            --mirror "${{ matrix.arch.mirror }}" \
+            --series "$SERIES" \
+            --extra-package vim \
+            --extra-package ca-certificates \
+            --extra-package openssh-server \
+            --extra-package cloud-init \
+            --extra-package curl \
+            --extra-package "linux-modules-nvidia-${DRIVER_VERSION}-server-generic" \
+            --extra-package "nvidia-utils-${DRIVER_VERSION}-server" \
+            --extra-package linux-generic \
+            --extra-package docker-ce \
+            --extra-package docker-ce-cli \
+            --extra-package containerd.io \
+            --extra-package docker-buildx-plugin \
+            --extra-package docker-compose-plugin \
+            --extra-package nvidia-container-toolkit
+      # see https://forums.developer.nvidia.com/t/nvrm-this-pci-i-o-region-assigned-to-your-nvidia-device-is-invalid/229899/2
+      - name: Configure Kernel command line
+        run: |
+          echo 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX pci=realloc"' > zz-cmdline.cfg
+          sudo genesis copy-files \
+            --disk-image disk.img \
+            --file ./zz-cmdline.cfg:/etc/default/grub.d/zz-cmdline.cfg
+      - name: Install Grub
+        run: |
+          sudo genesis install-grub --disk-image disk.img
+      - name: Converting to qcow2
+        run: |
+          sudo qemu-img convert -f raw -O qcow2 disk.img disk.qcow2
+      - name: Upload to Scaleway
+        run: |
+          s3cmd \
+            --ssl \
+            --bucket-location='fr-par' \
+            --host='s3.fr-par.scw.cloud' \
+            --host-bucket='%(bucket)s.s3.fr-par.scw.cloud' \
+            --access_key ${{ secrets.S3_ACCESS_KEY }} \
+            --secret_key ${{ secrets.S3_SECRET_KEY }} \
+              put file ./disk.qcow2 "s3://gjolly-images/ubuntu-${SERIES}-$(date +%Y%m%d)-nvidia-${DRIVER_VERSION}-extra.qcow2"
