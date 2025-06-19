@@ -49,9 +49,6 @@ jobs:
         run: sudo python3 -m pip install git+https://github.com/gjolly/genesis.git@main
       - name: running debootstrap
         run: sudo genesis debootstrap --output ./rootfs --series $SERIES --mirror "${{ matrix.arch.mirror }}"
-      - name: creating tarball
-        run: sudo tar czf rootfs.tar.gz ./rootfs
-
       - name: creating disk-image
         run: sudo genesis create-disk --size 4 --rootfs-dir ./rootfs
       - name: Updating the system
